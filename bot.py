@@ -1,15 +1,15 @@
 import configparser
 import sys
 import discord
-import pytz
 from datetime import datetime
-from datetime import timedelta
-from discord.ext import commands
+from discord.ext import commands, tasks
 from random import randint, seed
 from classes import StudyTime
 
 seed(42)
 
+
+#read config file
 config = configparser.ConfigParser()
 try:
     config.read('configbot.ini')
@@ -22,12 +22,16 @@ bot_token = config['botSetting']['botToken']
 channel_id = int(config['botSetting']['channelId'])
 
 bot_description = "This bot is designed to help students study in groups"
+
+#intents are neccesary for a bot to function. They are choosen by a user
+#Each attribute in the Intents class documents which events a bot can corresponds to and which caches it enables.
 intents = discord.Intents.all()
+
 intents.message_content = True
 
-client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix='!', description=bot_description, intents=intents)
 
+#Creates studytime class with default values
 study_session = StudyTime()
 
 studytip1 ="""
@@ -46,34 +50,42 @@ studytip6 = "Snack on smart food:"
 
 studytips= [studytip1,studytip2,studytip3,studytip4,studytip5,studytip6]
 
+#Bot event are premade discord wrappers that cover many events
 @bot.event
 async def on_ready():
+    """_summary_
+    """
     message = "Lets start studying!"
     print(message)
     channel = bot.get_channel(channel_id)
     await channel.send(message)
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
-
-@bot.command()
-async def hello(ctx):
-    await ctx.send("Hello, How are you?")
-
-@bot.command()
-async def add(ctx, arg1, arg2):
-    total = int(arg1) + int(arg2)
-    await ctx.send(total)
 
 @bot.command()
 async def tip(ctx):
     value = randint(0,5)
     await ctx.send(studytips[value])
+
+"Task will excute at start. Studying session will resume after 15 minutes "
+@tasks.loop(minutes=study_session.max_time, count=2)
+async def study_break(ctx):
+    #Ignore first run
+    if study_break.current_loop == 0:
+        return
+
+    channel = bot.get_channel(channel_id)
+    await channel.send(f"Please take a break for {study_session.break_time} min. Memory retention drops after long study periods")
+    resume_study.start(ctx)
+        
+
+@tasks.loop(minutes=study_session.break_time, count=2)
+async def resume_study(ctx):
+    #Ignore first run
+    if resume_study.current_loop == 0:
+        return
+    
+    channel = bot.get_channel(channel_id)
+    await channel.send("The break is over. Time to go back to studying :(")
 
 @bot.command()
 async def start(ctx):
@@ -84,7 +96,9 @@ async def start(ctx):
     study_session.is_studying = True
     study_session.start_time = ctx.message.created_at.timestamp()
     time = datetime.utcfromtimestamp(study_session.start_time).strftime("%H:%M:%S")
+    study_break.start(ctx)
     await ctx.send(f"Studying has begun at: {time} UTC")
+
 
 @bot.command()
 async def end(ctx):
@@ -97,6 +111,10 @@ async def end(ctx):
     readable_end = datetime.utcfromtimestamp(end_time).strftime("%H:%M:%S")
     delta = end_time - study_session.start_time
     time = datetime.utcfromtimestamp(delta).strftime("%H:%M:%S")
+    study_break.stop()
     await ctx.send(f"Studying session has lasted: {time} and finished at {readable_end}")
 
 bot.run(bot_token)
+
+def add():
+    

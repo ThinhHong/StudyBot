@@ -5,4 +5,5 @@ channel_id: An integet representing the ID of the channel the bot will respond i
 
 
 Run pip install Discord.py
+pip install pytz
 Version 2.32

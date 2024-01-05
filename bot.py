@@ -1,8 +1,9 @@
 import configparser
 import sys
 import discord
-from datetime import datetime
 import pytz
+from datetime import datetime
+from datetime import timedelta
 from discord.ext import commands
 from random import randint, seed
 from classes import StudyTime
@@ -83,6 +84,19 @@ async def start(ctx):
     study_session.is_studying = True
     study_session.start_time = ctx.message.created_at.timestamp()
     time = datetime.utcfromtimestamp(study_session.start_time).strftime("%H:%M:%S")
-    await ctx.send(f"Studying has begun at: {time}")
+    await ctx.send(f"Studying has begun at: {time} UTC")
+
+@bot.command()
+async def end(ctx):
+    if study_session.is_studying == False:
+        await ctx.send("Session is not underway")
+        return
+    
+    study_session.is_studying = False
+    end_time = ctx.message.created_at.timestamp()
+    readable_end = datetime.utcfromtimestamp(end_time).strftime("%H:%M:%S")
+    delta = end_time - study_session.start_time
+    time = datetime.utcfromtimestamp(delta).strftime("%H:%M:%S")
+    await ctx.send(f"Studying session has lasted: {time} and finished at {readable_end}")
 
 bot.run(bot_token)

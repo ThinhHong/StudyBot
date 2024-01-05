@@ -1,7 +1,7 @@
 class StudyTime:
     '''Class for keeping track of study time.'''
     is_studying: bool
-    start_time: int
+    start_time: float
 
     def __init__(
             self, 

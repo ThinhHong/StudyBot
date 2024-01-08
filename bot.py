@@ -4,7 +4,7 @@ import discord
 from datetime import datetime
 from discord.ext import commands, tasks
 from random import randint, seed
-from classes import StudyTime
+from .classes import StudyTime
 
 seed(42)
 
@@ -53,18 +53,24 @@ studytips= [studytip1,studytip2,studytip3,studytip4,studytip5,studytip6]
 #Bot event are premade discord wrappers that cover many events
 @bot.event
 async def on_ready():
-    """_summary_
+    """ on_ready function is run when discord bot is first used in a server
     """
     message = "Lets start studying!"
-    print(message)
+    #Creates like to channel using channel Id
     channel = bot.get_channel(channel_id)
     await channel.send(message)
 
 
 @bot.command()
 async def tip(ctx):
+    """sends random top from list
+
+    Args:
+        ctx: default parameter found in bot.command wrapper. Stores information send from user in channel
+    """
     value = randint(0,5)
     await ctx.send(studytips[value])
+
 
 "Task will excute at start. Studying session will resume after 15 minutes "
 @tasks.loop(minutes=study_session.max_time, count=2)
@@ -80,6 +86,11 @@ async def study_break(ctx):
 
 @tasks.loop(minutes=study_session.break_time, count=2)
 async def resume_study(ctx):
+    """Sends message to user to return to studying
+
+    Args:
+        ctx 
+    """
     #Ignore first run
     if resume_study.current_loop == 0:
         return
@@ -89,6 +100,11 @@ async def resume_study(ctx):
 
 @bot.command()
 async def start(ctx):
+    """Starts studying session and prepares task loop
+
+    Args:
+        ctx (_type_): _description_
+    """
     if study_session.is_studying == True:
         await ctx.send("Study session has already begun")
         return
@@ -102,6 +118,11 @@ async def start(ctx):
 
 @bot.command()
 async def end(ctx):
+    """ends study session
+
+    Args:
+        ctx (_type_): _description_
+    """
     if study_session.is_studying == False:
         await ctx.send("Session is not underway")
         return
@@ -115,6 +136,3 @@ async def end(ctx):
     await ctx.send(f"Studying session has lasted: {time} and finished at {readable_end}")
 
 bot.run(bot_token)
-
-def add():
-    

@@ -4,7 +4,7 @@ import discord
 from datetime import datetime
 from discord.ext import commands, tasks
 from random import randint, seed
-from .classes import StudyTime
+from classes import StudyTime
 
 seed(42)
 

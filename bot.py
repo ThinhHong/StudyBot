@@ -59,7 +59,30 @@ async def on_ready():
     #Creates like to channel using channel Id
     channel = bot.get_channel(channel_id)
     await channel.send(message)
+    
 
+@bot.command()
+async def set_session(ctx, arg1: int, arg2: int):
+    if type(arg1) == str:
+        await ctx.send("Must send a number")
+        return
+    
+    if type(arg2) == str:
+        await ctx.send("Must send a number")
+        return
+    
+    study_session.is_studying = False
+    study_session.max_time = arg1
+    study_session.break_time = arg2
+    await ctx.send(f"Study time is now {arg1}m and break time is {arg2}m")
+    
+
+@bot.command()
+
+async def add_tip(ctx,arg1: str):
+    studytips.append(arg1)
+    await ctx.send(f"Added {arg1} to the studytips list ")
+    
 
 @bot.command()
 async def tip(ctx):
@@ -68,7 +91,7 @@ async def tip(ctx):
     Args:
         ctx: default parameter found in bot.command wrapper. Stores information send from user in channel
     """
-    value = randint(0,5)
+    value = randint(0,studytips.length - 1)
     await ctx.send(studytips[value])
 
 

@@ -63,6 +63,13 @@ async def on_ready():
 
 @bot.command()
 async def set_session(ctx, arg1: int, arg2: int):
+    """set study sessions parameters
+
+    Args:
+        ctx (_type_): ctx
+        arg1 (int): int representing study time amount in minutes
+        arg2 (int): int representing break time amount in minutes
+    """
     if type(arg1) == str:
         await ctx.send("Must send a number")
         return
@@ -80,6 +87,12 @@ async def set_session(ctx, arg1: int, arg2: int):
 @bot.command()
 
 async def add_tip(ctx,arg1: str):
+    """add tips to study tips array
+
+    Args:
+        ctx (_type_): _description_
+        arg1 (str): _description_
+    """
     studytips.append(arg1)
     await ctx.send(f"Added {arg1} to the studytips list ")
     
